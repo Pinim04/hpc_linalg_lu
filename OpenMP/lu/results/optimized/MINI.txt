@@ -1,0 +1,22 @@
+0.000005
+0.000003
+0.000003
+0.000006
+0.000004
+
+ Performance counter stats for './lu_acc' (5 runs):
+
+             24.86 msec task-clock                       #    8.157 CPUs utilized               ( +-  2.88% )
+        88,889,788      cpu_atom/cycles/                 #    3.576 GHz                         ( +-  2.71% )  (56.77%)
+        98,886,234      cpu_core/cycles/                 #    3.978 GHz                         ( +-  2.79% )  (43.23%)
+        26,300,757      cpu_atom/instructions/           #    0.30  insn per cycle              ( +-  6.33% )  (56.77%)
+        47,906,398      cpu_core/instructions/           #    0.48  insn per cycle              ( +-  6.01% )  (43.23%)
+           145,695      cpu_atom/cache-references/       #    5.861 M/sec                       ( +- 17.55% )  (56.77%)
+           357,915      cpu_core/cache-references/       #   14.397 M/sec                       ( +- 16.24% )  (43.23%)
+            37,329      cpu_atom/cache-misses/           #   25.62% of all cache refs           ( +- 37.43% )  (56.77%)
+            72,429      cpu_core/cache-misses/           #   20.24% of all cache refs           ( +- 36.15% )  (43.23%)
+   <not supported>      cpu_atom/L1-dcache-load-misses/                                       
+           152,212      cpu_core/L1-dcache-load-misses/                                         ( +- 22.15% )  (43.23%)
+
+          0.003048 +- 0.000246 seconds time elapsed  ( +-  8.08% )
+

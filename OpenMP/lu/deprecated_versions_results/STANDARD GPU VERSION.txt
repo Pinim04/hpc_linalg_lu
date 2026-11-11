@@ -1,0 +1,29 @@
+STANDARD GPU VERSION
+
+0.621678
+0.564655
+0.595498
+0.632100
+0.617393
+0.579550
+0.575867
+0.577217
+0.635680
+0.546936
+
+ Performance counter stats for './lu_acc' (10 runs):
+
+       2401,432862      task-clock (msec)         #    3,801 CPUs utilized            ( +-  1,53% )
+               119      context-switches          #    0,049 K/sec                    ( +- 10,61% )
+                 0      cpu-migrations            #    0,000 K/sec                    ( +-100,00% )
+             1.598      page-faults               #    0,665 K/sec                    ( +-  0,07% )
+     3.535.187.528      cycles                    #    1,472 GHz                      ( +-  1,53% )  (75,02%)
+     1.698.218.915      instructions              #    0,48  insn per cycle           ( +-  1,66% )  (87,50%)
+     3.400.027.694      cycles:u                  #    1,416 GHz                      ( +-  1,47% )  (25,47%)
+     1.628.200.818      instructions:u            #    0,48  insn per cycle           ( +-  1,90% )  (37,87%)
+       796.276.507      cache-references          #  331,584 M/sec                    ( +-  1,33% )  (50,21%)
+        48.561.847      cache-misses              #    6,099 % of all cache refs      ( +-  0,37% )  (62,55%)
+       803.745.482      L1-dcache-loads           #  334,694 M/sec                    ( +-  1,26% )  (74,89%)
+        48.915.050      L1-dcache-load-misses     #    6,09% of all L1-dcache hits    ( +-  0,30% )  (87,44%)
+
+       0,631808229 seconds time elapsed                                          ( +-  1,55% )

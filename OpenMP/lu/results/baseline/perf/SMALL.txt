@@ -1,0 +1,24 @@
+0.001743
+0.001783
+0.001788
+0.001731
+0.001743
+0.001741
+0.001781
+0.001742
+0.001740
+0.001736
+
+ Performance counter stats for './lu_acc' (10 runs):
+
+        30.270.876      cycles:u                                                      ( +-  0,06% )
+        24.770.329      instructions:u            #    0,82  insn per cycle           ( +-  0,00% )
+   <not supported>      branches                                                    
+            31.962      branch-misses                                                 ( +-  0,31% )
+         8.411.997      cache-references                                              ( +-  0,03% )
+           737.082      cache-misses              #    8,762 % of all cache refs      ( +-  0,04% )
+         8.411.997      L1-dcache-loads                                               ( +-  0,03% )
+           737.082      L1-dcache-load-misses     #    8,76% of all L1-dcache hits    ( +-  0,04% )
+
+       0,063630062 seconds time elapsed                                          ( +-  0,27% )
+

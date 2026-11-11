@@ -1,0 +1,32 @@
+=== System & Board Info ===
+Linux nano7 4.9.337-tegra #1 SMP PREEMPT Mon Nov 4 23:41:41 PST 2024 aarch64 aarch64 aarch64 GNU/Linux
+gcc (Ubuntu/Linaro 7.5.0-3ubuntu1~18.04) 7.5.0
+OMP_NUM_THREADS=default
+=== CPU Frequency ===
+1479000
+=== Thermal Zones ===
+45500
+41500
+41500
+39000
+50000
+41500
+=== Cache Configuration ===
+/sys/devices/system/cpu/cpu0/cache/index0
+1
+Data
+32K
+2
+64
+/sys/devices/system/cpu/cpu0/cache/index1
+1
+Instruction
+48K
+3
+64
+/sys/devices/system/cpu/cpu0/cache/index2
+2
+Unified
+2048K
+16
+64
