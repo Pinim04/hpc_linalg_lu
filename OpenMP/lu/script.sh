@@ -30,6 +30,22 @@ get_dataset_flags() {
     fi
 }
 
+# Measures the CPU usage of OTHER processes: samples /proc/stat for 1 second
+# while this script runs nothing, and prints the busy share of all cores (%).
+# Unlike the load average, it is not inflated by our own previous runs.
+measure_background_cpu() {
+    local c1 c2 i total=0 idle
+    read -r -a c1 <<< "$(head -n 1 /proc/stat)"
+    sleep 1
+    read -r -a c2 <<< "$(head -n 1 /proc/stat)"
+    # Fields: cpu user nice system idle iowait irq softirq steal
+    idle=$(( (c2[4] + c2[5]) - (c1[4] + c1[5]) ))
+    for i in 1 2 3 4 5 6 7 8; do
+        total=$(( total + c2[i] - c1[i] ))
+    done
+    echo $(( total > 0 ? 100 * (total - idle) / total : 0 ))
+}
+
 echo ""
 echo "Checking 'perf' profiler..."
 
@@ -49,14 +65,38 @@ echo "Saving environment..."
   gcc --version | head -n 1
   
   echo "OMP_NUM_THREADS=${OMP_NUM_THREADS:-$(nproc)}"
-    
+  echo "OMP_WAIT_POLICY=${OMP_WAIT_POLICY:-default}"
+
+  echo "=== CPU State ==="
+  echo "Online CPUs: $(cat /sys/devices/system/cpu/online)"
+  echo "Governor: $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null || echo n/a)"
+  echo "Max freq (kHz): $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2>/dev/null || echo n/a)"
+  # Jetson power mode (MAXN = 4 cores at full clock, 5W = 2 cores at lower clock)
+  if command -v nvpmodel &> /dev/null; then
+    nvpmodel -q 2>/dev/null | grep -i "power mode" || echo "Power mode: unknown"
+  else
+    echo "Power mode: n/a"
+  fi
+
+  # Other activity on the machine: background load makes the OpenMP barriers wait
+  echo "=== System Load at Start ==="
+  uptime
+
+  echo "=== Per-dataset Conditions (Background CPU = other processes, % of all cores, sampled for 1 s before the run) ==="
 
 } > env/environment_conditions.txt
 
 echo "[SUCCESS] Environment conditions saved successfully!"
 
-# Defining PERF_EVENTS variable
-PERF_EVENTS="cycles:u,instructions:u,cache-references,cache-misses,L1-dcache-loads,L1-dcache-load-misses"
+# Defining PERF_EVENTS variable.
+# On ARM (Cortex-A57) the generic cache-references/cache-misses events count the
+# same L1D events as L1-dcache-*, so on aarch64 they are replaced with raw ARMv8
+# PMU events: r16 = L2D_CACHE (L2 accesses), r17 = L2D_CACHE_REFILL (L2 misses).
+if [ "$(uname -m)" == "aarch64" ]; then
+  PERF_EVENTS="cycles:u,instructions:u,L1-dcache-loads,L1-dcache-load-misses,r16,r17"
+else
+  PERF_EVENTS="cycles:u,instructions:u,cache-references,cache-misses,L1-dcache-loads,L1-dcache-load-misses"
+fi
 
 echo ""
 echo "========================================"
@@ -94,7 +134,7 @@ for DS in "${DATASETS[@]}"; do
       # Compiling WITHOUT POLYBENCH_TIME for Gprof
       echo "Running Gprof..."
       
-      make OPT="-O2 -pg -Dstatic= -fno-inline" EXT_CFLAGS="" clean all &> /dev/null
+      make OPT="-O0 -pg -Dstatic= " EXT_CFLAGS="" clean all &> /dev/null
       
       $EXEC_NAME &> /dev/null
       
@@ -109,6 +149,9 @@ for DS in "${DATASETS[@]}"; do
     # Compiling with POLYBENCH_TIME for native perf runs
     make OPT="-O2 -g" EXT_CFLAGS="$FLAGS" clean all &> /dev/null
     
+    # Record background CPU usage before running (other activity skews timings)
+    BG_CPU=$(measure_background_cpu)
+
     # Warm-up run
     echo "Executing warm-up run..."
     
@@ -119,7 +162,7 @@ for DS in "${DATASETS[@]}"; do
     perf stat -r 10 -e "$PERF_EVENTS" $EXEC_NAME &> "results/baseline/perf/${DS}.txt"
 
     echo "Saving temperature metric..."
-    echo "[BASELINE - $DS] | CPU Temp: $(($(cat /sys/class/thermal/thermal_zone1/temp)/1000))˚C" >> env/environment_conditions.txt
+    echo "[BASELINE - $DS] | CPU Temp: $(($(cat /sys/class/thermal/thermal_zone1/temp)/1000))˚C | Background CPU: ${BG_CPU}% | Users: $(who | wc -l)" >> env/environment_conditions.txt
     echo "[COMPLETED] Temperature metric logged successfully!"
 
     echo "[COMPLETED] Performance metrics logged to results/baseline/perf/${DS}.txt!"
@@ -177,6 +220,9 @@ for DS in "${DATASETS[@]}"; do
     # Compiling with POLYBENCH_TIME for native perf runs
     make OPT="-O2 -g -fopenmp" EXT_CFLAGS="$FLAGS" clean all &> /dev/null
     
+    # Record background CPU usage before running (other activity skews timings)
+    BG_CPU=$(measure_background_cpu)
+
     # Warm-up run
     echo "Executing warm-up run..."
     
@@ -187,7 +233,7 @@ for DS in "${DATASETS[@]}"; do
     perf stat -r 10 -e "$PERF_EVENTS" $EXEC_NAME &> "results/optimized/perf/${DS}.txt"
     
     echo "Saving temperature metric..."
-    echo "[OPTIMIZED - $DS] | CPU Temp: $(($(cat /sys/class/thermal/thermal_zone1/temp)/1000))˚C" >> env/environment_conditions.txt
+    echo "[OPTIMIZED - $DS] | CPU Temp: $(($(cat /sys/class/thermal/thermal_zone1/temp)/1000))˚C | Background CPU: ${BG_CPU}% | Users: $(who | wc -l)" >> env/environment_conditions.txt
     echo "[COMPLETED] Temperature metric saved successfully!"
 
     echo "[COMPLETED] Performance metrics logged to results/optimized/perf/${DS}.txt!"

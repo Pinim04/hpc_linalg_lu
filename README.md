@@ -32,8 +32,16 @@ OpenMP/
 - **`N > 128` (STANDARD, LARGE, EXTRALARGE):** one `omp parallel` region wraps
   the entire `k` loop, so the threads are created only once. The row
   normalization uses `omp for simd schedule(static)`. The trailing-submatrix
-  update uses `omp for schedule(guided)` over `i`, with an inner `simd` loop.
-  Guided scheduling fits the triangular, shrinking workload.
+  update uses `omp for schedule(static)` over `i`, with an inner `simd` loop.
+
+  **Why `static` and not `guided`:** the work shrinks only across `k`. For a
+  given `k`, every row `i > k` has the same length (`n-k-1`), so each `i` loop
+  is already evenly balanced. `guided` balances nothing here and adds
+  chunk-handout overhead at every `k` step. `static` also tends to give each
+  thread the same rows in consecutive `k` steps, which helps cache reuse.
+  `guided` only helps when cores run at different speeds, like the P/E cores
+  on hybrid Intel CPUs, not on the Jetson Nano's four identical A57 cores. The
+  guided-schedule results are kept in `results/*_guided/` for comparison.
 
 ## Dataset sizes
 
@@ -51,7 +59,7 @@ OpenMP/
 cd OpenMP/lu
 cp lu_optimized.c lu.c
 make OPT="-O2 -g -fopenmp" EXT_CFLAGS="-DLARGE_DATASET -DPOLYBENCH_TIME" clean all
-OMP_NUM_THREADS=8 ./lu_acc
+OMP_NUM_THREADS=4 ./lu_acc
 ```
 
 Useful PolyBench flags (pass them via `EXT_CFLAGS`):
