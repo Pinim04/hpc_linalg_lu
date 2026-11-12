@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -11,10 +10,6 @@
 /* Include benchmark-specific header. */
 /* Default data type is double, default size is 1024. */
 #include "lu.h"
-
-#define BJ 64
-#define BI 32
-#define min(a,b) ((a) < (b) ? (a) : (b))
 
 /* Array initialization. */
 static void init_array(int n, DATA_TYPE POLYBENCH_2D(A, N, N, n, n)){
@@ -81,7 +76,6 @@ static void kernel_lu(int n, DATA_TYPE POLYBENCH_2D(A, N, N, n, n)){
     }
 
   }
-  /*CPU Version*/
   else{
 
     #pragma omp parallel private(i, j, k)
@@ -95,7 +89,7 @@ static void kernel_lu(int n, DATA_TYPE POLYBENCH_2D(A, N, N, n, n)){
   
           A[k][j] = A[k][j] / A_kk;
         
-        #pragma omp for schedule(guided)
+        #pragma omp for schedule(static)
         for (i = k + 1; i < _PB_N; i++){
   
           DATA_TYPE A_ik = A[i][k];
@@ -110,29 +104,6 @@ static void kernel_lu(int n, DATA_TYPE POLYBENCH_2D(A, N, N, n, n)){
       }
     }
   }
-  /*GPU Version*/
-  /*else{
-
-    #pragma omp target data map(tofrom: A[0:_PB_N][0:_PB_N])
-    for (k = 0; k < _PB_N; k++){
-
-      #pragma omp target teams distribute parallel for simd
-      for (j = k + 1; j < _PB_N; j++)
-      
-        A[k][j] = A[k][j] / A[k][k];
-
-      #pragma omp target teams distribute parallel for simd collapse(2)
-      for (i = k + 1; i < _PB_N; i++){
-
-        for (j = k + 1; j < _PB_N; j++)
-
-          A[i][j] = A[i][j] - A[i][k] * A[k][j];
-        
-      }
-
-    }
-
-  }*/
 }
 
 int main(int argc, char **argv)
