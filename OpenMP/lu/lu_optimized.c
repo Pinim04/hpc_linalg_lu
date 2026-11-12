@@ -89,7 +89,7 @@ static void kernel_lu(int n, DATA_TYPE POLYBENCH_2D(A, N, N, n, n)){
   
           A[k][j] = A[k][j] / A_kk;
         
-        #pragma omp for schedule(guided)
+        #pragma omp for schedule(static)
         for (i = k + 1; i < _PB_N; i++){
   
           DATA_TYPE A_ik = A[i][k];
