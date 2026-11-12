@@ -22,3 +22,6 @@
 *~
 #*#
 
+# output files and folders
+**/results
+**/env
