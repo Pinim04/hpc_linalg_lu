@@ -83,9 +83,8 @@ The script runs the baseline and then the optimized version. For each one it:
 2. Does a warm-up run, then runs `perf stat -r 10` (cycles, instructions,
    branches, cache and L1-dcache events) on every dataset, writing to
    `results/<version>/perf/<DATASET>.txt`.
-3. On **SMALL**, checks correctness by diffing the baseline and optimized array
-   dumps, and runs Valgrind cachegrind + `cg_annotate`.
-4. On **STANDARD** (baseline only), produces a gprof flat profile.
+3. On **SMALL** runs Valgrind cachegrind + `cg_annotate`.
+4. On **STANDARD** checks correctness by diffing the baseline and optimized array dumps and, for the baseline version only, produces a gprof flat profile.
 
 Requirements: `gcc` with OpenMP support, `perf`, `valgrind`, `gprof`. If
 `perf` isn't found, the script tries `module load perf/1.0`, for HPC clusters.
@@ -95,3 +94,9 @@ Requirements: `gcc` with OpenMP support, `perf`, `valgrind`, `gprof`. If
 The `lu` kernel and the `utilities/` runtime come from
 [PolyBench/GPU-OpenMP](https://github.com/cavazos-lab/PolyBench-ACC) 1.0
 (University of Delaware, Ohio State University, Louis-Noël Pouchet).
+
+## Authors
+
+- Eleonora Muzzi
+
+- Matteo Pini
