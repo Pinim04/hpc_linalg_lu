@@ -48,25 +48,15 @@ echo "Saving environment..."
   
   gcc --version | head -n 1
   
-  echo "OMP_NUM_THREADS=${OMP_NUM_THREADS:-default}"
-  
-  echo "=== CPU Frequency ==="
-  cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null || lscpu | grep "MHz"
-  
-  echo "=== Thermal Zones ==="
-  cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null
-  
-  echo "=== Cache Configuration ==="
-  for cache in /sys/devices/system/cpu/cpu0/cache/index*; do
-    echo "$cache"
-    cat "$cache"/level "$cache"/type "$cache"/size "$cache"/ways_of_associativity "$cache"/coherency_line_size 2>/dev/null
-  done
+  echo "OMP_NUM_THREADS=${OMP_NUM_THREADS:-$(nproc)}"
+    
+
 } > env/environment_conditions.txt
 
 echo "[SUCCESS] Environment conditions saved successfully!"
 
 # Defining PERF_EVENTS variable
-PERF_EVENTS="cycles:u,instructions:u,branches,branch-misses,cache-references,cache-misses,L1-dcache-loads,L1-dcache-load-misses"
+PERF_EVENTS="cycles:u,instructions:u,cache-references,cache-misses,L1-dcache-loads,L1-dcache-load-misses"
 
 echo ""
 echo "========================================"
@@ -83,13 +73,8 @@ for DS in "${DATASETS[@]}"; do
     echo " -> Evaluating $DS dataset..."
     
     if [ "$DS" == "SMALL" ]; then
-    
-      # Compiling with DUMP_ARRAYS only for correctness check
-      make OPT="-O2 -g" EXT_CFLAGS="$FLAGS -DPOLYBENCH_DUMP_ARRAYS" clean all &> /dev/null
       
-      $EXEC_NAME 2> results/baseline/baseline_dump.txt > /dev/null
-      
-      # Recompiling WITHOUT DUMP_ARRAYS and WITHOUT POLYBENCH_TIME for Valgrind
+      # Compiling WITHOUT DUMP_ARRAYS and WITHOUT POLYBENCH_TIME for Valgrind
       echo "Running Valgrind..."
       
       make OPT="-O2 -g" EXT_CFLAGS="-DSMALL_DATASET" clean all &> /dev/null
@@ -100,6 +85,11 @@ for DS in "${DATASETS[@]}"; do
       echo "[SUCCESS] Cachegrind telemetry saved successfully!"
       
     elif [ "$DS" == "STANDARD" ]; then
+    
+      # Compiling with DUMP_ARRAYS only for correctness check
+      make OPT="-O2 -g" EXT_CFLAGS="$FLAGS -DPOLYBENCH_DUMP_ARRAYS" clean all &> /dev/null
+      
+      $EXEC_NAME 2> results/baseline/baseline_dump.txt > /dev/null
     
       # Compiling WITHOUT POLYBENCH_TIME for Gprof
       echo "Running Gprof..."
@@ -127,8 +117,12 @@ for DS in "${DATASETS[@]}"; do
     echo "Warm-up run completed. Executing 'perf' command..."
   
     perf stat -r 10 -e "$PERF_EVENTS" $EXEC_NAME &> "results/baseline/perf/${DS}.txt"
-              
-    echo "[COMPLETED] Metrics logged to results/baseline/perf/${DS}.txt!"
+
+    echo "Saving temperature metric..."
+    echo "[BASELINE - $DS] | CPU Temp: $(($(cat /sys/class/thermal/thermal_zone1/temp)/1000))˚C" >> env/environment_conditions.txt
+    echo "[COMPLETED] Temperature metric logged successfully!"
+
+    echo "[COMPLETED] Performance metrics logged to results/baseline/perf/${DS}.txt!"
     echo ""
     
 done
@@ -148,6 +142,18 @@ for DS in "${DATASETS[@]}"; do
     echo " -> Evaluating $DS dataset..."
     
     if [ "$DS" == "SMALL" ]; then
+      
+      # Compiling WITHOUT DUMP_ARRAYS and WITHOUT POLYBENCH_TIME for Valgrind
+      echo "Running Valgrind..."
+      
+      make OPT="-O2 -g -fopenmp" EXT_CFLAGS="-DSMALL_DATASET" clean all &> /dev/null
+      
+      valgrind --tool=cachegrind --cache-sim=yes --cachegrind-out-file=results/optimized/valgrind/cachegrind.out $EXEC_NAME &> results/optimized/valgrind/SMALL_cachegrind.txt
+      cg_annotate results/optimized/valgrind/cachegrind.out "$TARGET_C" > results/optimized/valgrind/SMALL_cg_annotate.txt
+      
+      echo "[COMPLETED] Cachegrind telemetry saved successfully!"
+      
+    elif [ "$DS" == "STANDARD" ]; then
     
       # Compiling with DUMP_ARRAYS only to verify correctness against baseline
       make OPT="-O2 -g -fopenmp" EXT_CFLAGS="$FLAGS -DPOLYBENCH_DUMP_ARRAYS" clean all &> /dev/null
@@ -166,16 +172,6 @@ for DS in "${DATASETS[@]}"; do
       
       rm -f results/baseline/baseline_dump.txt results/optimized/optimized_dump.txt
       
-      # Recompiling WITHOUT DUMP_ARRAYS and WITHOUT POLYBENCH_TIME for Valgrind
-      echo "Running Valgrind..."
-      
-      make OPT="-O2 -g -fopenmp" EXT_CFLAGS="-DSMALL_DATASET" clean all &> /dev/null
-      
-      valgrind --tool=cachegrind --cache-sim=yes --cachegrind-out-file=results/optimized/valgrind/cachegrind.out $EXEC_NAME &> results/optimized/valgrind/SMALL_cachegrind.txt
-      cg_annotate results/optimized/valgrind/cachegrind.out "$TARGET_C" > results/optimized/valgrind/SMALL_cg_annotate.txt
-      
-      echo "[COMPLETED] Cachegrind telemetry saved successfully!"
-      
     fi
     
     # Compiling with POLYBENCH_TIME for native perf runs
@@ -189,8 +185,12 @@ for DS in "${DATASETS[@]}"; do
     echo "Warm-up run completed. Executing 'perf' command..."
     
     perf stat -r 10 -e "$PERF_EVENTS" $EXEC_NAME &> "results/optimized/perf/${DS}.txt"
-              
-    echo "[COMPLETED] Metrics logged to results/optimized/perf/${DS}.txt!"
+    
+    echo "Saving temperature metric..."
+    echo "[OPTIMIZED - $DS] | CPU Temp: $(($(cat /sys/class/thermal/thermal_zone1/temp)/1000))˚C" >> env/environment_conditions.txt
+    echo "[COMPLETED] Temperature metric saved successfully!"
+
+    echo "[COMPLETED] Performance metrics logged to results/optimized/perf/${DS}.txt!"
     echo ""
     
 done
