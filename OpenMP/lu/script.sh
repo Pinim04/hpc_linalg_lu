@@ -80,7 +80,7 @@ for DS in "${DATASETS[@]}"; do
       make OPT="-O2 -g" EXT_CFLAGS="-DSMALL_DATASET" clean all &> /dev/null
       
       valgrind --tool=cachegrind --cache-sim=yes --cachegrind-out-file=results/baseline/valgrind/cachegrind.out $EXEC_NAME &> results/baseline/valgrind/SMALL_cachegrind.txt
-      cg_annotate results/baseline/valgrind/cachegrind.out "$TARGET_C" > results/baseline/valgrind/SMALL_cg_annotate.txt
+      cg_annotate --auto=yes results/baseline/valgrind/cachegrind.out > results/baseline/valgrind/SMALL_cg_annotate.txt
       
       echo "[SUCCESS] Cachegrind telemetry saved successfully!"
       
@@ -94,7 +94,7 @@ for DS in "${DATASETS[@]}"; do
       # Compiling WITHOUT POLYBENCH_TIME for Gprof
       echo "Running Gprof..."
       
-      make OPT="-O2 -pg -Dstatic= -fno-inline" EXT_CFLAGS="" clean all &> /dev/null
+      make OPT="-O0 -pg" EXT_CFLAGS="" clean all &> /dev/null
       
       $EXEC_NAME &> /dev/null
       
@@ -149,7 +149,7 @@ for DS in "${DATASETS[@]}"; do
       make OPT="-O2 -g -fopenmp" EXT_CFLAGS="-DSMALL_DATASET" clean all &> /dev/null
       
       valgrind --tool=cachegrind --cache-sim=yes --cachegrind-out-file=results/optimized/valgrind/cachegrind.out $EXEC_NAME &> results/optimized/valgrind/SMALL_cachegrind.txt
-      cg_annotate results/optimized/valgrind/cachegrind.out "$TARGET_C" > results/optimized/valgrind/SMALL_cg_annotate.txt
+      cg_annotate --auto=yes results/optimized/valgrind/cachegrind.out > results/optimized/valgrind/SMALL_cg_annotate.txt
       
       echo "[COMPLETED] Cachegrind telemetry saved successfully!"
       
