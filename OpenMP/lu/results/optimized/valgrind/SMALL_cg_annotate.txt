@@ -1,0 +1,155 @@
+--------------------------------------------------------------------------------
+I1 cache:         16384 B, 64 B, 4-way associative
+D1 cache:         16384 B, 64 B, 4-way associative
+LL cache:         262144 B, 64 B, 8-way associative
+Command:          ./lu_acc
+Data file:        results/optimized/valgrind/cachegrind.out
+Events recorded:  Ir I1mr ILmr Dr D1mr DLmr Dw D1mw DLmw
+Events shown:     Ir I1mr ILmr Dr D1mr DLmr Dw D1mw DLmw
+Event sort order: Ir I1mr ILmr Dr D1mr DLmr Dw D1mw DLmw
+Thresholds:       0.1 100 100 100 100 100 100 100 100
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+       Ir  I1mr  ILmr      Dr   D1mr  DLmr      Dw  D1mw  DLmw 
+--------------------------------------------------------------------------------
+3,242,268 1,289 1,067 772,446 95,635 2,423 388,659 2,903 2,749  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+       Ir I1mr ILmr      Dr   D1mr DLmr      Dw  D1mw  DLmw  file:function
+--------------------------------------------------------------------------------
+3,009,084    9    9 707,335 91,671    0 367,975 2,045 2,038  /nfs/home/333250/hpc_linalg_lu/OpenMP/lu/lu.c:main
+   46,675    8    8  13,908  1,062  844      13     1     0  /build/glibc-L0whdJ/glibc-2.27/elf/dl-addr.c:_dl_addr
+   42,010   20   18  14,467    550  182   5,396    18     0  /build/glibc-L0whdJ/glibc-2.27/elf/dl-lookup.c:do_lookup_x
+   22,346   13    6   3,320    166   55       0     0     0  /build/glibc-L0whdJ/glibc-2.27/string/../sysdeps/aarch64/strcmp.S:strcmp
+   22,301   15   12   6,073    155  113   3,577    15     0  /build/glibc-L0whdJ/glibc-2.27/elf/dl-lookup.c:_dl_lookup_symbol_x
+   15,679   29   29   5,346    747  709   2,462   273   246  /build/glibc-L0whdJ/glibc-2.27/elf/../sysdeps/aarch64/dl-machine.h:_dl_relocate_object
+   11,037    7    7   2,464     24   24      10     2     2  /build/glibc-L0whdJ/glibc-2.27/elf/dl-tunables.c:__GI___tunables_init
+    7,288   11   11   2,491    152   64     945     7     1  /build/glibc-L0whdJ/glibc-2.27/elf/dl-lookup.c:check_match
+    6,990    6    6     659    105   78     159     1     0  /build/glibc-L0whdJ/glibc-2.27/elf/do-rel.h:_dl_relocate_object
+    5,498    5    2   2,189     41    0   1,084     6     3  /build/glibc-L0whdJ/glibc-2.27/elf/dl-misc.c:_dl_name_match_p
+    5,400    9    5   2,200     65    3     160     0     0  /build/glibc-L0whdJ/glibc-2.27/stdlib/getenv.c:getenv
+    3,330    0    0   1,014     10   10       0     0     0  /build/glibc-L0whdJ/glibc-2.27/elf/dl-tunables.h:__GI___tunables_init
+
+--------------------------------------------------------------------------------
+-- Auto-annotated source: /nfs/home/333250/hpc_linalg_lu/OpenMP/lu/lu.c
+--------------------------------------------------------------------------------
+       Ir I1mr ILmr      Dr   D1mr DLmr      Dw  D1mw  DLmw 
+
+-- line 11 ----------------------------------------
+        .    .    .       .      .    .       .     .     .  /* Default data type is double, default size is 1024. */
+        .    .    .       .      .    .       .     .     .  #include "lu.h"
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .  /* Array initialization. */
+        .    .    .       .      .    .       .     .     .  static void init_array(int n, DATA_TYPE POLYBENCH_2D(A, N, N, n, n)){
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    int i, j;
+        .    .    .       .      .    .       .     .     .  
+      263    0    0       0      0    0       0     0     0    for (i = 0; i < n; i++)
+        .    .    .       .      .    .       .     .     .  
+   33,152    0    0       0      0    0       0     0     0      for (j = 0; j < n; j++)
+        .    .    .       .      .    .       .     .     .  
+   82,050    1    1       0      0    0  16,384 2,045 2,038        A[i][j] = ((DATA_TYPE)(i + 1) * (j + 1)) / n;
+        .    .    .       .      .    .       .     .     .    
+        .    .    .       .      .    .       .     .     .  }
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .  /* DCE code. Must scan the entire live-out data.
+        .    .    .       .      .    .       .     .     .    Can be used also to check the correctness of the output. */
+        .    .    .       .      .    .       .     .     .  static void print_array(int n, DATA_TYPE POLYBENCH_2D(A, N, N, n, n)){
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    int i, j;
+-- line 31 ----------------------------------------
+-- line 50 ----------------------------------------
+        .    .    .       .      .    .       .     .     .  static void kernel_lu(int n, DATA_TYPE POLYBENCH_2D(A, N, N, n, n)){
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    int i, j, k;
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    if(n <= 128){
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .      for (k = 0; k < _PB_N; k++){
+        .    .    .       .      .    .       .     .     .  
+      889    2    2     128    112    0       0     0     0        DATA_TYPE A_kk = A[k][k];
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .        #pragma omp simd
+      512    1    1       0      0    0       0     0     0        for (j = k + 1; j < _PB_N; j++)
+        .    .    .       .      .    .       .     .     .        
+   46,637    2    2   4,096    952    0   4,096     0     0          A[k][j] = A[k][j] / A_kk;
+        .    .    .       .      .    .       .     .     .  
+   16,891    0    0       0      0    0       0     0     0        for (i = k + 1; i < _PB_N; i++){
+        .    .    .       .      .    .       .     .     .  
+   40,637    0    0   8,128  7,999    0       0     0     0          DATA_TYPE A_ik = A[i][k];
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .          #pragma omp simd
+        .    .    .       .      .    .       .     .     .          for (j = k + 1; j < _PB_N; j++)
+        .    .    .       .      .    .       .     .     .  
+2,787,902    1    1 694,976 82,607    0 347,488     0     0            A[i][j] = A[i][j] - A_ik * A[k][j];
+        .    .    .       .      .    .       .     .     .          
+        .    .    .       .      .    .       .     .     .        }
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .      }
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    }
+        .    .    .       .      .    .       .     .     .    else{
+        .    .    .       .      .    .       .     .     .  
+-- line 80 ----------------------------------------
+-- line 102 ----------------------------------------
+        .    .    .       .      .    .       .     .     .          }
+        .    .    .       .      .    .       .     .     .    
+        .    .    .       .      .    .       .     .     .        }
+        .    .    .       .      .    .       .     .     .      }
+        .    .    .       .      .    .       .     .     .    }
+        .    .    .       .      .    .       .     .     .  }
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .  int main(int argc, char **argv)
+      135    2    2       0      0    0       7     0     0  {
+        .    .    .       .      .    .       .     .     .    /* Retrieve problem size. */
+        .    .    .       .      .    .       .     .     .    int n = N;
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    /* Variable declaration/allocation. */
+        6    0    0       0      0    0       0     0     0    POLYBENCH_2D_ARRAY_DECL(A, DATA_TYPE, N, N, n, n);
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    /* Initialize array(s). */
+        .    .    .       .      .    .       .     .     .    init_array(n, POLYBENCH_ARRAY(A));
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    /* Start timer. */
+        .    .    .       .      .    .       .     .     .    polybench_start_instruments;
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    /* Run kernel. */
+-- line 123 ----------------------------------------
+-- line 124 ----------------------------------------
+        .    .    .       .      .    .       .     .     .    kernel_lu(n, POLYBENCH_ARRAY(A));
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    /* Stop and print timer. */
+        .    .    .       .      .    .       .     .     .    polybench_stop_instruments;
+        .    .    .       .      .    .       .     .     .    polybench_print_instruments;
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    /* Prevent dead-code elimination. All live-out data must be printed
+        .    .    .       .      .    .       .     .     .       by the function call in argument. */
+        2    0    0       0      0    0       0     0     0    polybench_prevent_dce(print_array(n, POLYBENCH_ARRAY(A)));
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    /* Be clean. */
+        2    0    0       0      0    0       0     0     0    POLYBENCH_FREE_ARRAY(A);
+        .    .    .       .      .    .       .     .     .  
+        .    .    .       .      .    .       .     .     .    return 0;
+        6    0    0       7      1    0       0     0     0  }
+
+--------------------------------------------------------------------------------
+The following files chosen for auto-annotation could not be found:
+--------------------------------------------------------------------------------
+  /build/glibc-L0whdJ/glibc-2.27/elf/dl-misc.c
+  /build/glibc-L0whdJ/glibc-2.27/stdlib/getenv.c
+  /build/glibc-L0whdJ/glibc-2.27/elf/do-rel.h
+  /build/glibc-L0whdJ/glibc-2.27/elf/dl-tunables.c
+  /build/glibc-L0whdJ/glibc-2.27/elf/../sysdeps/aarch64/dl-machine.h
+  /build/glibc-L0whdJ/glibc-2.27/string/../sysdeps/aarch64/strcmp.S
+  /build/glibc-L0whdJ/glibc-2.27/elf/dl-lookup.c
+  /build/glibc-L0whdJ/glibc-2.27/elf/dl-tunables.h
+  /build/glibc-L0whdJ/glibc-2.27/elf/dl-addr.c
+
+--------------------------------------------------------------------------------
+Ir I1mr ILmr Dr D1mr DLmr Dw D1mw DLmw 
+--------------------------------------------------------------------------------
+93    1    1 92   96    0 95   70   74  percentage of events annotated
+
