@@ -1,10 +1,10 @@
-<details open>
-<summary><h1>Assignment #1</h1></summary>
+# High-Performance Computing Assignments
 
-## LU Decomposition — OpenMP Optimization
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
-Profiling and OpenMP optimization of the PolyBench `lu` kernel (in-place LU
-decomposition of an `N x N` matrix, no pivoting).
+Repository containing High-Performance Computing course assignments at **UNIMORE (2026/2027)**
+
+## Assignment #1 - LU Decomposition (OpenMP)
 
 ### Repository layout
 
@@ -49,13 +49,13 @@ Assignment#1/
 
 ### Dataset sizes
 
-| Dataset    | N              |
-|------------|----------------|
-| MINI       | 32             |
-| SMALL      | 128            |
-| STANDARD   | 1024 (default) |
-| LARGE      | 2000           |
-| EXTRALARGE | 4000           |
+| DATASET   | N              | MATRIX SIZE | FITS IN       |
+| :---       | :---           | :---        | :---          |
+| `MINI`       | 32             | 8 KB        | _L1 (32 KB)_    |
+| `SMALL`      | 128            | 128 KB      | _L2 (2 MB)_     |
+| `STANDARD`   | 1024 (default) | 8 MB        | _DRAM only_     |
+| `LARGE`      | 2000           | 32 MB       | _DRAM only_     |
+| `EXTRALARGE` | 4000           | 128 MB      | _DRAM only_     |
 
 ### Building and running manually
 
@@ -99,9 +99,7 @@ The `lu` kernel and the `utilities/` runtime come from
 [PolyBench/GPU-OpenMP](https://github.com/cavazos-lab/PolyBench-ACC) 1.0
 (University of Delaware, Ohio State University, Louis-Noël Pouchet).
 
-</details>
-
-### Authors
+## Contributors
 
 - Eleonora Muzzi
 - Matteo Pini
