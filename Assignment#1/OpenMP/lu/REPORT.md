@@ -35,8 +35,9 @@ against the PolyBench reference kernel `lu_baseline.c`.
 It does one warm-up run and then `perf stat -r 10`. The reported kernel time is
 the mean of the 10 PolyBench timer values, which cover the kernel only, not
 process startup. In addition:
-- **SMALL:** cachegrind on both versions.
-- **STANDARD:** a gprof profile of the baseline, and a check that both versions
+- **SMALL:** cachegrind on both versions and a check that both versions
+  produce identical output.
+- **STANDARD:** a gprof profile of the baseline and a check that both versions
   produce identical output.
 
 **Conditions.** Before each dataset, the script sampled the CPU usage of other

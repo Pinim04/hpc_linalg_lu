@@ -1,28 +1,32 @@
-# LU Decomposition — OpenMP Optimization
+# High-Performance Computing Assignments
 
-Profiling and OpenMP optimization of the PolyBench `lu` kernel (in-place LU
-decomposition of an `N x N` matrix, no pivoting).
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
-## Repository layout
+Repository containing High-Performance Computing course assignments at **UNIMORE (2026/2027)**
+
+## Assignment #1 - LU Decomposition (OpenMP)
+
+### Repository layout
 
 ```
-OpenMP/
-├── lu/
-│   ├── lu_baseline.c               # Reference sequential PolyBench kernel
-│   ├── lu_optimized.c              # Optimized OpenMP version
-│   ├── lu.c                        # Build target (script.sh copies one of the above here)
-│   ├── lu.h                        # Dataset sizes and DATA_TYPE
-│   ├── Makefile                    # Uses ../utilities/common.mk
-│   ├── script.sh                   # Full profiling pipeline (perf, gprof, cachegrind)
-│   ├── results/                    # Output of script.sh
-│   │   ├── baseline/{perf,gprof,valgrind}/
-│   │   └── optimized/{perf,valgrind}/
-│   ├── env/                        # Machine/environment snapshot taken by script.sh
-│   └── deprecated_versions_results/  # Measurements from earlier versions
-└── utilities/                      # PolyBench runtime (polybench.c/h) and build rules
+Assignment#1/
+└── OpenMP/
+    ├── lu/
+    │   ├── lu_baseline.c               # Reference sequential PolyBench kernel
+    │   ├── lu_optimized.c              # Optimized OpenMP version
+    │   ├── lu.c                        # Build target (script.sh copies one of the above here)
+    │   ├── lu.h                        # Dataset sizes and DATA_TYPE
+    │   ├── Makefile                    # Uses ../utilities/common.mk
+    │   ├── script.sh                   # Full profiling pipeline (perf, gprof, cachegrind)
+    │   ├── results/                    # Output of script.sh
+    │   │   ├── baseline/{perf,gprof,valgrind}/
+    │   │   └── optimized/{perf,valgrind}/
+    │   ├── env/                        # Machine/environment snapshot taken by script.sh
+    │   └── deprecated_versions_results/  # Measurements from earlier versions
+    └── utilities/                      # PolyBench runtime (polybench.c/h) and build rules
 ```
 
-## Optimizations
+### Optimizations
 
 `lu_optimized.c` takes a different path depending on the problem size:
 
@@ -43,17 +47,17 @@ OpenMP/
   on hybrid Intel CPUs, not on the Jetson Nano's four identical A57 cores. The
   guided-schedule results are kept in `results/*_guided/` for comparison.
 
-## Dataset sizes
+### Dataset sizes
 
-| Dataset    | N    |
-|------------|------|
-| MINI       | 32   |
-| SMALL      | 128  |
-| STANDARD   | 1024 (default) |
-| LARGE      | 2000 |
-| EXTRALARGE | 4000 |
+| DATASET   | N              | MATRIX SIZE | FITS IN       |
+| :---       | :---           | :---        | :---          |
+| `MINI`       | 32             | 8 KB        | _L1 (32 KB)_    |
+| `SMALL`      | 128            | 128 KB      | _L2 (2 MB)_     |
+| `STANDARD`   | 1024 (default) | 8 MB        | _DRAM only_     |
+| `LARGE`      | 2000           | 32 MB       | _DRAM only_     |
+| `EXTRALARGE` | 4000           | 128 MB      | _DRAM only_     |
 
-## Building and running manually
+### Building and running manually
 
 ```sh
 cd OpenMP/lu
@@ -68,7 +72,7 @@ Useful PolyBench flags (pass them via `EXT_CFLAGS`):
 - `-DPOLYBENCH_TIME` prints the kernel execution time
 - `-DPOLYBENCH_DUMP_ARRAYS` dumps the result matrix to stderr (for correctness checks)
 
-## Profiling pipeline
+### Profiling pipeline
 
 ```sh
 cd OpenMP/lu
@@ -83,15 +87,19 @@ The script runs the baseline and then the optimized version. For each one it:
 2. Does a warm-up run, then runs `perf stat -r 10` (cycles, instructions,
    branches, cache and L1-dcache events) on every dataset, writing to
    `results/<version>/perf/<DATASET>.txt`.
-3. On **SMALL**, checks correctness by diffing the baseline and optimized array
-   dumps, and runs Valgrind cachegrind + `cg_annotate`.
-4. On **STANDARD** (baseline only), produces a gprof flat profile.
+3. On **SMALL** checks correctness by diffing the baseline and optimized array dumps and runs Valgrind cachegrind + `cg_annotate`.
+4. On **STANDARD** checks correctness by diffing the baseline and optimized array dumps and, for the baseline version only, produces a gprof flat profile.
 
 Requirements: `gcc` with OpenMP support, `perf`, `valgrind`, `gprof`. If
 `perf` isn't found, the script tries `module load perf/1.0`, for HPC clusters.
 
-## Credits
+### Credits
 
 The `lu` kernel and the `utilities/` runtime come from
 [PolyBench/GPU-OpenMP](https://github.com/cavazos-lab/PolyBench-ACC) 1.0
 (University of Delaware, Ohio State University, Louis-Noël Pouchet).
+
+## Contributors
+
+- Eleonora Muzzi
+- Matteo Pini
