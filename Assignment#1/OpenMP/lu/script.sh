@@ -203,7 +203,7 @@ for DS in "${DATASETS[@]}"; do
       
       $EXEC_NAME 2> results/optimized/optimized_dump.txt > /dev/null    
       
-      if diff -q results/baseline/baseline_dump.txt results/optimized/optimized_dump.txt > /dev/null; then
+      if diff -u results/baseline/baseline_dump.txt results/optimized/optimized_dump.txt > /dev/null; then
       
         echo " [OK] Correctness verified: Baseline and Optimized outputs match!"
         
