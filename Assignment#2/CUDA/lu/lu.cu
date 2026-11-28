@@ -17,6 +17,14 @@ extern "C" {
 /* Default data type is double, default size is 1024. */
 #include "lu.h"
 
+#ifndef BX
+#define BX 64
+#endif
+
+#ifndef BY
+#define BY 4
+#endif
+
 /* Array initialization. */
 static void init_array(int n, DATA_TYPE POLYBENCH_2D(A, N, N, n, n)){
 
@@ -53,12 +61,12 @@ static void print_array(int n, DATA_TYPE POLYBENCH_2D(A, N, N, n, n)){
 }
 
 #define CUDA_CHECK(call)                                                                                 \
-    do {                                                                                                   \
-        cudaError_t err = (call);                                                                            \
-        if (err != cudaSuccess) {                                                                            \
-            fprintf(stderr, "CUDA error at %s:%d: %s\n", __FILE__, __LINE__, cudaGetErrorString(err));         \
-            exit(EXIT_FAILURE);                                                                                \
-        }                                                                                                    \
+    do {                                                                                                 \
+        cudaError_t err = (call);                                                                        \
+        if (err != cudaSuccess) {                                                                        \
+            fprintf(stderr, "CUDA error at %s:%d: %s\n", __FILE__, __LINE__, cudaGetErrorString(err));   \
+            exit(EXIT_FAILURE);                                                                          \
+        }                                                                                                \
     } while (0)
 
 // launch bounds specifies the maximum number of threads per block and the minimum number of blocks per multiprocessor, prevents occupancy dropping in any case (can be omitted in this case because #registers used is <=13)
@@ -96,7 +104,7 @@ static void kernel_lu(int n, DATA_TYPE POLYBENCH_2D(A, N, N, n, n)){
     CUDA_CHECK(cudaFuncSetCacheConfig(lu_trailing, cudaFuncCachePreferL1));
 
     int block1D = 256;
-    dim3 block2D(32, 8); // put all 32 threads of a warp in the x dimension to promote coalescing
+    dim3 block2D(BX, BY); // put all 32 threads of a warp in the x dimension to promote coalescing
 
     for(int k = 0; k < n - 1; k++){
 
